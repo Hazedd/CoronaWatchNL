@@ -161,7 +161,10 @@ class CoronaWatchNL(object):
             feature = self._get_geojson_feature_with_stats(key, value, gemeenten_geojson)
             # feature.properties["dataset_name"] = dataset["name"]
             output_feature_list.append(feature)
-        return geojson.FeatureCollection(output_feature_list)
+
+        tester = dict(geojson.FeatureCollection(output_feature_list))
+        tester["crs"] = { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::28992" } }
+        return tester  # geojson.FeatureCollection(output_feature_list)
 
 
     def _get_geojson_from_data(self, data, indent=2):

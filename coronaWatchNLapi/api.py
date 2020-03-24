@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from flask_restplus import Resource, Api
 
-from coronaWatchNLapi.classes.coronaWatchStatsNL import CoronaWatchStatsNL
+from coronaWatchNLapi.classes.coronaWatchNLstats import CoronaWatchStatsNL
 cWatchNL = CoronaWatchStatsNL()
 
 app = Flask(__name__)
