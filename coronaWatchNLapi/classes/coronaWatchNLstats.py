@@ -6,6 +6,21 @@ class CoronaWatchStatsNL(CoronaWatchNL):
     def __init__(self):
         super().__init__()
 
+    def actual_total_residents(self):
+        out_dict = {}
+        for key, item in self.corona_data_dict.items():
+            actual_count = int(item["timeseries"][-1]["total_count"])
+            inhabitants = int(self.gemeenten_stats[key]['a_inw'])
+            size = int(self.gemeenten_stats[key]['size'])
+            size_inhabitants = (inhabitants/size) * 1000
+            print(size_inhabitants)
+            try:
+                out_dict[key] = 12121/ actual_count
+            except:
+                out_dict[key] = None
+
+        return out_dict
+
     def increase_of_last_days(self, days=7):
         out_dict = {}
         # out_dict["name"] = "increase_of_last_days"
@@ -68,3 +83,11 @@ class CoronaWatchStatsNL(CoronaWatchNL):
             ###################################################
             out_dict[key] = object_dict
         return out_dict
+
+coronaWatchStatsNL = CoronaWatchStatsNL()
+tester = coronaWatchStatsNL.actual_total_residents()
+print(tester)
+
+
+for item in coronaWatchStatsNL.gemeenten_geojson.features:
+    print((item.geometry))

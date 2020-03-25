@@ -19,13 +19,12 @@ class CoronaWatchNL(object):
         # privates
         self._url_csv_corona_data_gemeenten = "https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/data/rivm_corona_in_nl_table.csv"
         self._url_csv_gemeenten_geojson = "https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/ext/gemeente-2019.geojson"
-        self._url_csv_gemeenten_inwoners = "https://raw.githubusercontent.com/Hazedd/CoronaWatchNL/master/ext/Gemeenten_kerncijfers_2019.csv"
-
+        self._url_csv_gemeenten_stats = "https://raw.githubusercontent.com/Hazedd/CoronaWatchNL/master/ext/Gemeenten_kerncijfers_2019.csv"
+        self._url_opp = ""
         # pubs
         self.corona_data_dict = {}
-        self.gemeenten_stats = {}
         self.gemeenten_geojson = {}
-
+        self.gemeenten_stats = {}
         # construct
         self._construct()
 
@@ -39,7 +38,7 @@ class CoronaWatchNL(object):
         self.corona_data_dict = self._prep_corona_data(csv_dict_reader)
 
         # download, and parse kerncijfers.
-        csv_dict_reader = self._download_data_as_csv_dict_reader(self._url_csv_corona_data_gemeenten)
+        csv_dict_reader = self._download_data_as_csv_dict_reader(self._url_csv_gemeenten_stats, ";")
         self.gemeenten_stats = self._prep_gemeenten_kerncijfer(csv_dict_reader)
 
         # download and parse gemeenten geojson
@@ -78,22 +77,26 @@ class CoronaWatchNL(object):
         :return: cleaned geojson feature collection
         """
         for item in geojson_data.features:
-            item.properties['Gemeentenaam'] = self.corona_data_dict[str(item.properties['Gemnr'])]['Gemeentenaam']
-            item.properties['Provincienaam'] = self.corona_data_dict[str(item.properties['Gemnr'])]['Provincienaam']
+            key = str(item.properties['Gemnr'])
+            item.properties['Gemeentenaam'] = self.corona_data_dict[key]['Gemeentenaam']
+            item.properties['Provincienaam'] = self.corona_data_dict[key]['Provincienaam']
+            self.gemeenten_stats[key]['size'] = int(item.properties['Shape_Area'])
+
             for key in ["Shape_Area", "Shape_Leng", "Gemeenten_", "OBJECTID"]:
                 del item.properties[f"{key}"]
         return geojson_data
 
     @staticmethod
     def _prep_gemeenten_kerncijfer(csv_dict_reader):
+        import pprint as pp
         """
         Private method that creates a gemeenten kerncijfer dict. Key is a stripped gemeente id
         :param csv_dict_reader:
         :return: dict of gemeenten kerncijfers, key is gemeente id.
         """
         out_dict = {}
-        for item in csv_dict_reader:
-            out_dict[str(int(item['Gemeentecode']))] = item
+        for row in csv_dict_reader:
+            out_dict[f"{int(row['gwb_code_8'])}"] = row
         return out_dict
 
     @staticmethod
@@ -162,9 +165,9 @@ class CoronaWatchNL(object):
             # feature.properties["dataset_name"] = dataset["name"]
             output_feature_list.append(feature)
 
-        tester = dict(geojson.FeatureCollection(output_feature_list))
-        tester["crs"] = { "type": "name", "properties": { "name": "urn:ogc:def:crs:EPSG::28992" } }
-        return tester  # geojson.FeatureCollection(output_feature_list)
+        geojson_output = dict(geojson.FeatureCollection(output_feature_list))
+        geojson_output["crs"] = {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::28992"}}
+        return geojson_output
 
 
     def _get_geojson_from_data(self, data, indent=2):
