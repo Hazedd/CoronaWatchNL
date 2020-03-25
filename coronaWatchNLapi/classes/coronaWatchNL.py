@@ -18,7 +18,8 @@ class CoronaWatchNL(object):
         """
         # privates
         self._url_csv_corona_data_gemeenten = "https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/data/rivm_corona_in_nl_table.csv"
-        self._url_csv_gemeenten_geojson = "https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/ext/gemeente-2019.geojson"
+        # self._url_csv_gemeenten_geojson = "https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/ext/gemeente-2019.geojson"
+        self._url_csv_gemeenten_geojson = "https://cartomap.github.io/nl/wgs84/gemeente_2019.geojson"
         self._url_csv_gemeenten_stats = "https://raw.githubusercontent.com/Hazedd/CoronaWatchNL/master/ext/Gemeenten_kerncijfers_2019.csv"
         self._url_csv_opp = "https://raw.githubusercontent.com/Hazedd/CoronaWatchNL/master/ext/gemeente_opp.csv"
         # pubs
@@ -79,12 +80,11 @@ class CoronaWatchNL(object):
         :return: cleaned geojson feature collection
         """
         for item in geojson_data.features:
-            key = str(item.properties['Gemnr'])
+            key = str(int(str(item.properties['statcode']).replace("GM", "")))
+            item.properties['Gemnr'] = int(key)
             item.properties['Gemeentenaam'] = self.corona_data_dict[key]['Gemeentenaam']
             item.properties['Provincienaam'] = self.corona_data_dict[key]['Provincienaam']
-            self.gemeenten_stats[key]['size'] = int(item.properties['Shape_Area'])
-
-            for key in ["Shape_Area", "Shape_Leng", "Gemeenten_", "OBJECTID"]:
+            for key in ["FID", "jrstatcode", "statnaam"]:
                 del item.properties[f"{key}"]
         return geojson_data
 
@@ -181,7 +181,7 @@ class CoronaWatchNL(object):
             output_feature_list.append(feature)
 
         geojson_output = dict(geojson.FeatureCollection(output_feature_list))
-        geojson_output["crs"] = {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::28992"}}
+        # geojson_output["crs"] = {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::28992"}}
         return geojson_output
 
 

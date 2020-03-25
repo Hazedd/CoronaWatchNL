@@ -14,6 +14,7 @@ class CoronaWatchStatsNL(CoronaWatchNL):
             timeseries = value["timeseries"]
             object_dict = {}
             object_dict["Gemeentenaam"] = value['Gemeentenaam']
+            object_dict["gemNr"] = f"GM{int(key):04d}"
             object_dict["total_count"] = timeseries[-1]["total_count"]
             object_dict["new"] = timeseries[-1]["new"]
 
@@ -32,6 +33,7 @@ class CoronaWatchStatsNL(CoronaWatchNL):
         for key, item in self.corona_data_dict.items():
             timeseries = item["timeseries"]
             object_dict = {}
+            object_dict["gemNr"] = f"GM{int(key):04d}"
             out_list = []
             for idx in range(2, (days+1)):
                 try:
