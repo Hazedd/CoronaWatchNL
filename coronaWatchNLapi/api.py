@@ -11,12 +11,10 @@ api = Api(app, version='0.0.1', title='CoronaWatchNL API',
 
 nsCoronaWatch = api.namespace('coronaWatchNL', description='CoronaWatchNL data and stats')
 
-
 @nsCoronaWatch.route('/getActual')
 class GetActual(Resource):
     def get(self):
-        dataset = cWatchNL.actual()
-        return jsonify(cWatchNL.get_geojson_from_dataset(dataset))
+        return cWatchNL.actual()
 
 
 @nsCoronaWatch.route('/getActualGeojson')
@@ -49,6 +47,19 @@ class GetGrowthRate(Resource):
 class GetIncreaseOfLastDays(Resource):
     def get(self):
         dataset = cWatchNL.growth_rate()
+        return jsonify(cWatchNL.get_geojson_from_dataset(dataset))
+
+
+@nsCoronaWatch.route('/getHistorical')
+class GetHistorical(Resource):
+    def get(self):
+        return cWatchNL.get_historical()
+
+
+@nsCoronaWatch.route('/getHistoricalGeojson')
+class GetHistoricalGeojson(Resource):
+    def get(self):
+        dataset = cWatchNL.get_historical()
         return jsonify(cWatchNL.get_geojson_from_dataset(dataset))
 
 

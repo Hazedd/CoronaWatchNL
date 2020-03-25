@@ -14,17 +14,18 @@ class CoronaWatchNL(object):
     """
     def __init__(self):
         """
-
+        Base to parse and process data
         """
         # privates
         self._url_csv_corona_data_gemeenten = "https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/data/rivm_corona_in_nl_table.csv"
         self._url_csv_gemeenten_geojson = "https://raw.githubusercontent.com/J535D165/CoronaWatchNL/master/ext/gemeente-2019.geojson"
         self._url_csv_gemeenten_stats = "https://raw.githubusercontent.com/Hazedd/CoronaWatchNL/master/ext/Gemeenten_kerncijfers_2019.csv"
-        self._url_opp = ""
+        self._url_csv_opp = "https://raw.githubusercontent.com/Hazedd/CoronaWatchNL/master/ext/gemeente_opp.csv"
         # pubs
         self.corona_data_dict = {}
         self.gemeenten_geojson = {}
         self.gemeenten_stats = {}
+        self.gemeenten_opp = {}
         # construct
         self._construct()
 
@@ -33,17 +34,18 @@ class CoronaWatchNL(object):
         Private method to parse and combine data
         :return:
         """
-        # download and parse corona data
+        # download and parse
         csv_dict_reader = self._download_data_as_csv_dict_reader(self._url_csv_corona_data_gemeenten)
         self.corona_data_dict = self._prep_corona_data(csv_dict_reader)
 
-        # download, and parse kerncijfers.
         csv_dict_reader = self._download_data_as_csv_dict_reader(self._url_csv_gemeenten_stats, ";")
         self.gemeenten_stats = self._prep_gemeenten_kerncijfer(csv_dict_reader)
 
-        # download and parse gemeenten geojson
         downloaded_geojson = self._download_geojson()
         self.gemeenten_geojson = self._prep_geojson(downloaded_geojson)
+
+        csv_dict_reader = self._download_data_as_csv_dict_reader(self._url_csv_opp, ";")
+        self.gemeenten_opp = self._prep_gemeenten_opp(csv_dict_reader)
 
     def _download_data_as_csv_dict_reader(self, url, delimiter_value=","):
         """
@@ -98,6 +100,19 @@ class CoronaWatchNL(object):
         for row in csv_dict_reader:
             out_dict[f"{int(row['gwb_code_8'])}"] = row
         return out_dict
+
+    @staticmethod
+    def _prep_gemeenten_opp(csv_dict_reader):
+        """
+        Private method that creates a gemeenten kerncijfer dict. Key is a stripped gemeente id
+        :param csv_dict_reader:
+        :return: dict of gemeenten kerncijfers, key is gemeente id.
+        """
+        out_dict = {}
+        for row in csv_dict_reader:
+            out_dict[f"{int(row['gem_code'])}"] = row
+        return out_dict
+
 
     @staticmethod
     def _prep_corona_data(csv_dict_reader):
